@@ -7,7 +7,7 @@ Orbit Vault is a mobile-first crypto-wallet interface simulator for content crea
 - All accounts, balances, cash adjustments, swaps, receipts, and activity are fictional and stored locally in this browser.
 - The app does not connect to a blockchain, RPC endpoint, exchange, wallet provider, or payment service. It never creates or handles seed phrases, private keys, or signatures.
 - CoinGecko is queried read-only for public market-price snapshots, with CoinPaprika as a fallback. If both providers are unavailable or rate-limited, Orbit Vault reports that and uses the latest saved snapshot. After a snapshot loads, the one-second price movement is a local simulation based on the preceding simulated price; it is not a live quote or market prediction.
-- A first-launch notice must be acknowledged before the simulator opens. A persistent simulator notice appears only in Settings. About explains the simulation. The screenshot watermark is optional.
+- A first-launch notice must be acknowledged before the simulator opens. About contains the accessible “Simulator — No Real Funds” disclosure, and transaction confirmations explicitly describe local simulation. The screenshot watermark is optional.
 - Never use Orbit Vault to mislead someone, impersonate a wallet or person, or present simulated balances or activity as proof of funds or real transactions.
 
 ## Run locally
@@ -34,6 +34,7 @@ The production site is written to `dist/`.
 
 - **Vercel:** import the repository, use `npm run build`, and set the output directory to `dist`.
 - **Netlify:** connect the repository, use build command `npm run build`, and publish directory `dist`.
+- **Cloudflare Pages:** keep the existing GitHub-connected Pages project, use `npm run build`, and set the build output directory to `dist`. This is a static Vite application; no Worker or backend is required.
 - No backend, environment variable, or market-data API key is required. Public endpoints can rate-limit or refuse browser requests; the app explains when it falls back to a saved snapshot. CoinGecko is tried first; CoinPaprika is the fallback provider.
 
 ## Install on a phone
@@ -43,15 +44,23 @@ The production site is written to `dist/`.
 
 The PWA manifest, standalone display mode, local app icons, and service worker provide install metadata and an offline app shell. Read-only market quotes require connectivity; local wallet simulation remains available from saved data when offline.
 
+The layout reads the actual viewport and all four safe-area insets. The application shell synchronizes its height to `window.innerHeight`, with CSS viewport-unit fallbacks, to avoid a bottom gap when iOS standalone reports a shorter `dvh`. Sheets independently follow the visual viewport when the keyboard changes its size. No device resolution or Dynamic Island dimensions are hardcoded. The single generated manifest is `/manifest.webmanifest`; local PNG and SVG install icons are included.
+
+The current app icon uses the user-supplied SVG. Versioned 180px Apple, 192/512px PWA and 32px browser PNGs are generated locally with an opaque background; the original SVG remains unchanged. Existing compatibility icon paths are retained. Orbit Vault's application name and simulator disclosures are unchanged.
+
+Production uses the PWA plugin's update client. When a new service worker activates, Orbit saves its latest wallet snapshot before refreshing and defers the refresh while a dialog or text field is being edited. `public/_headers` asks Cloudflare Pages to revalidate the HTML, service worker and manifest. Publishing a new build is still required for changes to reach an existing deployed installation; user storage does not need to be cleared.
+
+Launch and page backgrounds are black in the default dark theme. The deprecated translucent Apple status-bar override is omitted, following [WebKit guidance](https://bugs.webkit.org/show_bug.cgi?id=317153#c2), so iOS can match the status region to the page. The application does not draw or hide system bars. Some iOS versions retain system-owned inset behavior; desktop WebKit tests cannot certify the appearance of an installed iPhone PWA.
+
 ## Features
 
-- Home, Trade, and Predict primary tabs with a mobile account drawer; Activity, Watchlist, and Collectibles surfaces.
+- Home, Trade, Predict, and Explore primary tabs with a mobile account drawer; Activity, Watchlist, and Collectibles surfaces.
 - Multi-account local profiles with independent cash and token quantities, editable name/address/avatar, and account switching/deletion.
 - Cash adjustment, local send/review/confirmation, local receipt with an address QR, and local asset swaps with a 0.5% simulated spread.
-- Search across the included 20-asset market catalog, add/remove assets per account, edit quantities and metadata, manage custom local assets, hide and sort assets, and inspect token details/history.
+- Search across the included 20-asset market catalog, with Featured, Top gainers and Market cap discovery lists and Watchlist/In wallet filters. Search shows unit quotes even for unowned assets. Add/remove assets per account, edit quantities and metadata, manage custom local assets, hide and sort assets, and inspect token details/history.
 - Portfolio charts with 1H, 24H, 1W, 1M, 1Y, and ALL views; token details use LIVE, 1D, 1W, 1M, 1Y, and ALL. The rolling LIVE series follows the shared local market simulation.
 - Activity details, locally saved practice picks, appearance/currency/precision preferences, optional watermark, JSON import/export, and reset controls.
-- LocalStorage persistence with migration from the previous single-profile format, an installation guide, and a settings-only safety banner.
+- LocalStorage persistence with migration from the previous single-profile format, same-origin tab synchronization, an installation guide, and an About disclosure.
 
 ## Market snapshot provenance
 

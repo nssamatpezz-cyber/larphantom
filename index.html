@@ -1,20 +1,53 @@
 <!doctype html>
-<html lang="it">
+<html lang="it" data-launch="visible">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b0b10" />
+    <meta name="theme-color" content="#ab9ff2" />
+    <meta name="color-scheme" content="dark light" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Orbit Vault" />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" href="/apple-touch-icon.png" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-v2.png" />
+    <link rel="apple-touch-startup-image" href="/launch-1206x2622.png" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-v2.png" />
+    <link rel="icon" type="image/svg+xml" sizes="any" href="/app-icon.svg" />
+    <link rel="preload" as="image" type="image/svg+xml" href="/app-icon.svg" />
     <title>Orbit Vault</title>
+    <style>
+      html,body{margin:0;background:#ab9ff2;color:#f7f7f8}
+      html[data-launch]{background:#ab9ff2!important;color-scheme:light!important}
+      html[data-launch] #root{opacity:0;pointer-events:none}
+      #launch-screen{position:fixed;z-index:1000;inset:0;width:100%;height:var(--app-viewport-height,100%);overflow:hidden;background:#ab9ff2;opacity:1;touch-action:none;user-select:none;-webkit-user-select:none;will-change:opacity}
+      #launch-screen img{position:absolute;top:50%;left:50%;display:block;width:52vw;max-width:260px;height:auto;transform:translate(-50%,-50%)}
+      html[data-launch="leaving"] #root{opacity:1;transition:opacity 320ms cubic-bezier(.22,1,.36,1)}
+      #launch-screen.is-leaving{opacity:0;transition:opacity 320ms cubic-bezier(.22,1,.36,1)}
+      #launch-error{position:absolute;right:20px;bottom:max(24px,env(safe-area-inset-bottom));left:20px;padding:18px;border-radius:18px;background:#fffdf8;color:#100c1a;font:15px/1.5 -apple-system,BlinkMacSystemFont,sans-serif}
+      #launch-error[hidden]{display:none}
+      #launch-error p{margin:0 0 12px}
+      #launch-retry{width:100%;min-height:46px;border:0;border-radius:999px;background:#100c1a;color:#fff;font:600 15px -apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer}
+      @media(prefers-reduced-motion:reduce){html[data-launch="leaving"] #root,#launch-screen.is-leaving{transition:none}}
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="launch-screen" class="launch-screen" role="status" aria-label="Opening Orbit Vault"><img src="/app-icon.svg" alt="" width="128" height="128" fetchpriority="high" /><div id="launch-error" hidden><p>Orbit Vault couldn’t open. Check your connection and try again.</p><button id="launch-retry" type="button">Reload app</button></div></div>
+    <div id="root" inert aria-hidden="true"></div>
+    <noscript><style>#launch-screen{display:none}noscript p{padding:24px;color:#100c1a;font:16px/1.5 sans-serif}</style><p>Enable JavaScript to open Orbit Vault.</p></noscript>
+    <script>
+      (()=>{
+        const onLoadError=event=>{
+          const cover=document.getElementById('launch-screen');
+          if(!cover||!(event.target instanceof HTMLScriptElement)||event.target.type!=='module')return;
+          document.getElementById('launch-error').hidden=false;
+          cover.setAttribute('role','alert');
+          cover.setAttribute('aria-label','Orbit Vault could not open');
+        };
+        document.getElementById('launch-retry').addEventListener('click',()=>location.reload());
+        window.addEventListener('error',onLoadError,true);
+        window.addEventListener('orbit:launched',()=>window.removeEventListener('error',onLoadError,true),{once:true});
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

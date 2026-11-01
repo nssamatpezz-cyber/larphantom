@@ -99,3 +99,63 @@ The public MyLarpWallet demo exposes a mobile shell with Home / Trade / Predict,
 - `npm test`: passed, **14 tests**.
 - In-app mobile browser preview at 399 CSS px wide: opened and inspected Add Cash and live balance preview; Send through Review; Receive QR/copy/share controls; Swap picker and Review; account deletion confirmation (canceled); Settings; asset edit and custom-add views; and a stored transaction detail. No cash, token, account, send, receive, or swap changes were confirmed. The application’s ongoing local price simulation continued as usual.
 - The preview reported matching viewport, document and body widths (399 px; no horizontal overflow). This was browser-emulated QA, not a physical iPhone Safari session or an installed standalone PWA session. PWA build and manifest generation passed; actual device installation remains unverified.
+
+## Current final polish and iPhone adaptation — 2026-11-01
+
+This section supersedes earlier verification counts and the earlier chart-path interpolation approach. The existing simulator, original Orbit identity, market initialization, account data and static Vite deployment architecture are preserved.
+
+### Visual and interaction corrections
+
+- Compared all seven attached reference screens with captured implementations. Refined header/navigation proportions, balance typography, token rows, market cards, prediction proportions, original action icons, floating controls and account drawer. Financial values use tabular numerals and shared unit-price precision. Long account names truncate within the available width.
+- Removed the double top inset in token detail. The chart keeps its complete stroke during one-second updates instead of repeatedly restarting its draw animation; period changes use a short opacity transition. The lazy chart fallback reserves space for its controls.
+- Unified subflow spacing, 52px actions, 44px minimum targets, label alignment, amount-entry typography, settings contrast, and success/review layouts. The accent picker has an accessible native input and a consistent visible color swatch in both themes.
+- Added a sampled damped spring for interrupted sheet drags, momentum-aware dismissal and Reduce Motion support. Prevented title text selection from stealing the pointer stream after keyboard/viewport changes. Custom Back/Done/Cancel controls now follow the shared exit path; closing backdrops intercept taps until the exit completes.
+- Drawer and quick actions contain keyboard focus and restore their opener, including Safari's touch behavior. Modal autofocus remains on the requested field. Stale toasts no longer cover newly opened forms.
+- Fixed Swap selection resetting on price ticks, Buy opening the wrong selected token, hidden Receive feedback, inconsistent market-cap currency conversion, and floating-point noise in quantity editing. Untouched balance precision is retained.
+- Wallet storage events synchronize valid same-origin updates across tabs without save loops. Persistence, account isolation and shared simulated-market continuity have regression coverage.
+
+### iPhone viewport and top-region correction
+
+- Uses browser-reported dynamic viewport height, with `svh`/`vh` fallbacks and `visualViewport` handling for sheets. No fixed device dimensions or Dynamic Island offsets are used at runtime. Safe insets are read from all four platform environment variables; dock/sheet/drawer controls respect landscape cutouts. Removed repeated bottom inset padding.
+- Default document first paint, theme color, manifest background and opaque header now agree on black. Both standard and prefixed header backdrop filters are explicitly disabled. Intentional drawer, modal and quick-action blur remains.
+- Removed the deprecated `black-translucent` Apple status-bar override, following WebKit's published guidance, so current iOS can derive the region from the page. The DOM cannot control a system-owned status area; the reported installed-iPhone strip was not reproduced on a physical device and is not claimed fixed there.
+- Removed the broken manual `/manifest.json` link. Vite generates a single valid `/manifest.webmanifest`, with standalone display, root scope/start URL/id and local PNG/SVG install icons. The offline cache includes the Apple icon and all token assets.
+- Preserved the GitHub/Cloudflare Pages deployment approach: `npm run build` outputs `dist`, with no new backend, deployment service, credentials or production publish. Updated README deployment/install details and removed stale Settings-banner descriptions.
+
+### Actual verification
+
+- TypeScript + production Vite/PWA build passed; 610 transformed modules and 33 precache entries. Vitest: **17 tests passed**.
+- Five-width matrix: 375, 390, 393, 402 and 430px in Chromium and desktop WebKit. **70 main-screen captures**, with no JavaScript page errors, broken token logos or document/body horizontal overflow. **120 grouped workflow checks / 270 state captures** passed in isolated browser contexts.
+- Primary iPhone-proportion scenario: **402×874 CSS px**, with 62px top/34px bottom test insets, captured all seven screens in both engines (**14 additional captures**). **24 grouped workflow checks / 54 state captures** passed, including exact cash/send/receive/swap/buy balance updates, search/editing, accounts, settings and reload persistence. No measured visible form/button target was below 44px in this scenario.
+- Layout/gesture probes passed in both engines: opaque header after scroll, safe floating controls, active-tab visibility, long names, reduced available height as a keyboard proxy, short-drag spring return, downward dismissal, landscape and zero-inset viewport sizing. Reduce Motion workflow at 390px passed all 12 groups/27 states. Focus/animated-exit and chart tick/period checks also passed in both engines.
+- Production preview verified one valid manifest, correctly dimensioned PNG icons, opaque black root/header and no header blur. The generated service worker activated and controlled the page; offline reload retained acknowledgement and all 20 token logos loaded/decoded offline in Chromium and WebKit. No local 404s or JavaScript page errors were reported.
+- Evidence and detailed findings are in `outputs/qa/AUDIT.md`, with comparison galleries in `outputs/qa/index.html` and `outputs/qa/iphone-final/`. Tests use disposable contexts; no real user wallet data was reset or changed by QA.
+
+### Remaining verification limits
+
+- No physical iPhone 17 Pro, actual iPhone Safari software keyboard or installed standalone PWA session was available. Desktop WebKit mobile emulation is not device certification; real-device FPS and the iOS-owned top strip remain unverified.
+- Windows headless WebKit reports the intended overlay blur but does not composite it like Chromium in these captures. Intentional filters remain in the app; this renderer difference is documented rather than presented as an iPhone test result.
+- Screenshots were visually compared, not declared pixel-identical. Data, branding, educational content, functional controls and the accessible simulator disclosures intentionally differ from the reference. The app renders no fake system status bars or home indicator.
+
+## Figma inspiration pass — 2026-11-01
+
+- Opened the supplied `IH5ZMAftX8g4ZARNdQPhvl` public prototype and inspected Home, Trade, Explore, quick actions and two search states. Observations and saved browser references are in `outputs/qa/figma-reference/NOTES.md`.
+- Kept the current architecture and seven-screen design baseline. Applied bounded refinements: correctly red negative-performance badges, visible sub-cent portfolio totals, centralized unit quotes in market previews, neutral token containers, Featured / Top gainers / Market cap discovery presets, and 16px search text.
+- Search result rows display token unit quotes even for assets not held by the account; wallet asset rows retain quantity and holding value. Existing Watchlist / In wallet filters and add/remove/custom-asset actions are preserved. No volume ranking or market data was fabricated.
+- Price visibility preferences also mask the new preview quotes. Account data, price simulation, portfolio math and local persistence were not reset or rewritten.
+- Figma's public viewer worked, but the connected account lacked editor permission for the file session/design-context/screenshot tools. No layer dimensions or source were obtained; this pass is inspiration and independent polish, not a measured Figma reconstruction. No proprietary prototype assets or branding were imported.
+- TypeScript + Vite/PWA build passed; **21 Vitest tests passed**, including four new portfolio-precision/currency tests. Targeted browser evidence is in `outputs/qa/figma-polish/`.
+- Targeted Chromium/WebKit checks at 375, 402 and 430px passed **54 grouped checks / 42 captures**, covering discovery sort order, existing filters, unowned-token unit quotes, correct token detail/back navigation, small balances/loss colors, price visibility and touch targets. No JavaScript errors, page overflow, broken logos or visible controls below 44px were reported. A final 402px pass checked the precision of daily changes and 20px horizontal carousel gutters. See `outputs/qa/figma-polish/index.html`; real iPhone testing remains unavailable.
+
+## Reported iPhone gap / top blur and supplied app icon — 2026-11-02
+
+- Reviewed the supplied phone screenshot. Its green negative-performance badge differs from the current red rule, suggesting an older loaded/deployed client; this is an inference, not proof of the exact device cause.
+- Added `useAppViewport`: the shell uses the browser's reported `window.innerHeight` rather than relying exclusively on CSS `dvh`. Updates are animation-frame throttled for resize, orientation, pageshow, visibility and visual-viewport changes. No physical-screen height or device-specific correction is added. Existing sheet keyboard sizing stays independent.
+- Made the header sticky and fully opaque, with standard/prefixed backdrop filters and element filtering disabled. Removed the earlier base stylesheet's translucent/blurred header declaration. Intentional modal and drawer blur remains.
+- Connected the real `virtual:pwa-register` update client. An activated update saves the latest local state before refreshing; dialogs and active text editing defer refresh. Storage failure prevents reload. Cloudflare `_headers` revalidates HTML, service worker and manifest instead of relying on stale cached entry points.
+- Completed the requested app icon replacement using the supplied `images(3).svg`. `app-icon.svg` preserves the exact source; Apple 180px, PWA 192/512px and favicon 32px PNGs are opaque, with versioned URLs. Compatibility assets, onboarding and About marks are updated. The app name, account avatars and stored wallet data are unchanged.
+- **Build passed:** TypeScript, Vite, service worker generation; 614 modules and 33 precache entries. **29 Vitest tests passed**, including eight update-reload guard tests.
+- **Viewport regression:** Chromium and WebKit passed 10 groups each / 20 captures, with no JavaScript errors or document overflow. A deliberately short 812px CSS shell inside a 402×874 viewport reproduces a 62px bottom gap; the reported-height variable restores full shell/dock alignment even with 812px or 750px CSS fallbacks. Also checked safe insets, scrolled opaque header, keyboard visual height 540px with layout 874px, zero-inset 812px browser, landscape and pageshow restoration. Evidence: `outputs/qa/viewport-gap-fixed/index.html`.
+- **Real service-worker activation test:** isolated Chromium/WebKit contexts loaded production build A, activated B while Cash draft `987` was open, retained the draft, and refreshed once after dismissal. Saved cash `100`, account, acknowledgement and market history survived. No JavaScript errors. Evidence: `outputs/qa/pwa-update/report.json`.
+- **Icon verification:** exact SVG source equality; public/dist PNG dimensions and opacity; correct manifest/HTML references; all five active assets precached and served with HTTP 200/image MIME types.
+- The short-CSS regression is an explicit emulation proxy, not a physical iPhone reproduction. The system-owned status region and installed Home Screen icon refresh remain unverified on a real phone. A deployed Cloudflare installation must receive the new build before these fixes can appear; this checkout has no Git remote or deployment connection and no production deployment was performed. No storage/cache clearing or wallet reset is required by these fixes.
