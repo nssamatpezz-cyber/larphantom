@@ -1,9 +1,0 @@
-{
-  "name": "orbit-vault-simulator",
-  "private": true,
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": { "dev": "vite", "build": "tsc -b && vite build", "test": "vitest run", "test:watch": "vitest" },
-  "dependencies": { "@vitejs/plugin-react": "latest", "qrcode.react": "latest", "react": "latest", "react-dom": "latest", "recharts": "latest", "zustand": "latest" },
-  "devDependencies": { "@types/react": "latest", "@types/react-dom": "latest", "autoprefixer": "latest", "postcss": "latest", "tailwindcss": "^3.4.17", "typescript": "latest", "vite": "latest", "vite-plugin-pwa": "latest", "vitest": "latest", "jsdom": "latest" }
-}
